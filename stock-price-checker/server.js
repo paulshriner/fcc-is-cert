@@ -3,6 +3,7 @@ require('dotenv').config();
 const express     = require('express');
 const bodyParser  = require('body-parser');
 const cors        = require('cors');
+const mongoose = require('mongoose');
 
 const apiRoutes         = require('./routes/api.js');
 const fccTestingRoutes  = require('./routes/fcctesting.js');
@@ -51,5 +52,7 @@ const listener = app.listen(process.env.PORT || 3000, function () {
     }, 3500);
   }
 });
+
+mongoose.connect(process.env.MONGO_URI);
 
 module.exports = app; //for testing
