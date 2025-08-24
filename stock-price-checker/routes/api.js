@@ -14,7 +14,8 @@ const stockSchema = new mongoose.Schema({
   },
   likes: {
     type: [String],
-    required: true
+    required: true,
+    default: []
   }
 });
 
@@ -40,16 +41,16 @@ module.exports = app => {
               stockData.push({
                 "stock": data.symbol,
                 "price": data.latestPrice
-              })
+              });
             } else {
               stockData.push({
-                "error": "invalid symbol",
-              })
+                "error": "invalid symbol"
+              });
             }
           } catch (err) {
             stockData.push({
-              "error": "invalid symbol",
-            })           
+              "error": "invalid symbol"
+            });
           }
 
           // Insert stock into database, update likes
@@ -57,56 +58,50 @@ module.exports = app => {
           // Thanks https://www.npmjs.com/package/bcrypt for bcrypt syntax
           let hashedIP = await bcrypt.hash(req.ip, saltRounds);
           // Thanks https://mongoosejs.com/docs/async-await.html for async Mongoose queries
-          await Stock.findOne({name: curName})
-                     .then(async u => {
-                       if (u === null) {
-                         // Here, no record was found, so one is prepared and inserted
-                         try {
-                           const e = await Stock.insertOne({
-                             name: curName,
-                             likes: req.query.like ? [hashedIP] : []
-                           });
-                           stockData[i] = {
-                             ...stockData[i],
-                             "likes": e.likes.length
-                           };
-                         } catch (err) {
-                           console.log(err);
-                         }
-                       } else {
-                         // Record was found, so likes are updated
-                         if (req.query.like) {
-                          let found = false;
-                          // if hash compare is true, then ip already liked
-                          for (const i in u.likes) {
-                            if (await bcrypt.compare(req.ip, u.likes[i])) {
-                             found = true;
-                             break;
-                            }
-                          }
+          // Thanks https://mongoosejs.com/docs/5.x/docs/tutorials/findoneandupdate.html for setOnInsert, upsert, new
+          // findOneAndUpdate will find the db record for that name. If it doesn't exist, it is created with the default likes value
+          await Stock.findOneAndUpdate(
+            {name: curName},
+            {$setOnInsert: {name: curName}},
+            {upsert: true, new: true}
+          )
+          .then(async u => {
+            // Handle if user wanted to like the stock
+            if (req.query.like) {
+              let found = false;
+              // if hash compare is true, then ip already liked
+              for (const i in u.likes) {
+                if (await bcrypt.compare(req.ip, u.likes[i])) {
+                  found = true;
+                  break;
+                }
+              } 
 
-                          !found && u.likes.push(hashedIP);
-                         }
-                         try {
-                           const e = await Stock.findOneAndUpdate({ name: curName }, { likes: u.likes });
-                           stockData[i] = {
-                             ...stockData[i],
-                             "likes": e.likes.length
-                           };
-                         } catch (err) {
-                           console.log(err);
-                         }
-                       }
-                     })
-                     .catch(err => {
-                       console.log(err);
-                     });
+              // add the like by recording hashed IP
+              !found && u.likes.push(hashedIP);
+
+              // update db record
+              await Stock.updateOne({ name: curName }, { likes: u.likes })
+                         .catch(err => {
+                          console.log(err);
+                         });
+            }
+
+            stockData[i] = {
+              ...stockData[i],
+              "likes": u.likes.length
+            };
+          })
+          .catch(err => {
+            console.log(err);
+          });
         }
 
         // With only one stock stockData solely contains that stock's data
         if (stocks[1] === undefined) {
           stockData = stockData[0]
         } else {
+          // relative likes is the difference between the two stocks likes
           stockData[0] = {
             ...stockData[0],
             "rel_likes": stockData[0].likes - stockData[1].likes
