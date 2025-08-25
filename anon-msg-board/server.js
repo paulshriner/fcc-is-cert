@@ -13,13 +13,6 @@ const runner            = require('./test-runner');
 const app = express();
 
 app.use(helmet()); // Sets several useful policies
-// Set content security policies
-// Thanks https://github.com/helmetjs/helmet/blob/main/middlewares/content-security-policy/README.md for styleSrc
-app.use(helmet.contentSecurityPolicy({directives: {
-  defaultSrc: ["'self'"],
-  scriptSrc: ["'self'"],
-  styleSrc: ["'self'"]
-}}));
 app.use(helmet.referrerPolicy({policy: 'same-origin'}));  // Only send referrer for own pages
 
 app.use('/public', express.static(process.cwd() + '/public'));

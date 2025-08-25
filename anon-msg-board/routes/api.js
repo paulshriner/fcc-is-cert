@@ -88,6 +88,35 @@ module.exports = app => {
         } else {
           res.json({"error": "missing required information"});
         }
+      })
+      // route for retrieving thread information
+      .get((req, res) => {
+        if (req.params.board) {
+          Thread.find({"board": req.params.board})
+                .then(u => {
+                  let threads = [];
+
+                  for (const thread in u) {
+                    threads.push({
+                      "_id": u[thread]._id,
+                      "text": u[thread].text,
+                      "created_on": u[thread].created_on,
+                      "bumped_on": u[thread].bumped_on,
+                      "replies": [] // will need changed to support replies
+                    });
+                  }
+
+                  // Thanks https://www.geeksforgeeks.org/javascript/sort-an-object-array-by-date-in-javascript/ for sorting by date
+                  threads = threads.sort((a, b) => new Date(b.bumped_on) - new Date(a.bumped_on));
+
+                  res.json(threads);
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+        } else {
+          res.json({"error": "missing required information"});
+        }
       });
     
   app.route('/api/replies/:board');
