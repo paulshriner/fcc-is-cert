@@ -117,6 +117,34 @@ module.exports = app => {
         } else {
           res.json({"error": "missing required information"});
         }
+      })
+      // route for deleting a thread
+      .delete((req, res) => {
+        if (req.body.thread_id && req.body.delete_password) {
+          Thread.findOne({"_id": req.body.thread_id})
+                .then(async u => {
+                  if (u !== null) {
+                    if (await bcrypt.compare(req.body.delete_password, u.delete_password)) {
+                      Thread.deleteOne({"_id": req.body.thread_id})
+                            .then(v => {
+                              res.send("success");
+                            })
+                            .catch(err => {
+                              res.send("Error deleting thread.");
+                            })
+                    } else {
+                      res.send("incorrect password");
+                    }
+                  } else {
+                    res.send("Invalid or non-existant ID.");
+                  }
+                })
+                .catch(err => {
+                  res.send("Invalid or non-existant ID.");
+                });
+        } else {
+          res.send("Invalid or missing information.");
+        }
       });
     
   app.route('/api/replies/:board');
