@@ -3,12 +3,24 @@ require('dotenv').config();
 const express     = require('express');
 const bodyParser  = require('body-parser');
 const cors        = require('cors');
+const mongoose    = require('mongoose');
+const helmet      = require('helmet');
 
 const apiRoutes         = require('./routes/api.js');
 const fccTestingRoutes  = require('./routes/fcctesting.js');
 const runner            = require('./test-runner');
 
 const app = express();
+
+app.use(helmet()); // Sets several useful policies
+// Set content security policies
+// Thanks https://github.com/helmetjs/helmet/blob/main/middlewares/content-security-policy/README.md for styleSrc
+app.use(helmet.contentSecurityPolicy({directives: {
+  defaultSrc: ["'self'"],
+  scriptSrc: ["'self'"],
+  styleSrc: ["'self'"]
+}}));
+app.use(helmet.referrerPolicy({policy: 'same-origin'}));  // Only send referrer for own pages
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
@@ -61,5 +73,7 @@ const listener = app.listen(process.env.PORT || 3000, function () {
     }, 1500);
   }
 });
+
+mongoose.connect(process.env.MONGO_URI);
 
 module.exports = app; //for testing
