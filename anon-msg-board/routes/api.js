@@ -278,6 +278,7 @@ module.exports = app => {
           res.json({"error": "missing required information"});
         }
       })
+      // route for deleting a reply
       .delete((req, res) => {
         if (req.body.thread_id && req.body.reply_id && req.body.delete_password) {
           // find the reply
@@ -301,6 +302,22 @@ module.exports = app => {
                })
                .catch(err => {
                  res.send("Invalid or non-existant ID.");
+               });
+        } else {
+          res.send("Invalid or missing information.");
+        }
+      })
+      // route for reporting a reply
+      .put((req, res) => {
+        if (req.body.reply_id) {
+          // find the reply, update its reported value
+          Reply.findOneAndUpdate({"_id": req.body.reply_id}, {"reported": true})
+               .then(u => {
+                 if (u !== null) {
+                   res.send("reported");
+                 } else {
+                   res.send("Invalid or non-existant ID.");
+                 }
                });
         } else {
           res.send("Invalid or missing information.");
