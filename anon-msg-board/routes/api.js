@@ -62,6 +62,9 @@ const replySchema = new mongoose.Schema({
   }  
 });
 
+const threadLimit = 10;
+const replyLimit = 3;
+
 const Thread = mongoose.model('Thread', threadSchema);
 const Reply = mongoose.model('Reply', replySchema);
 
@@ -80,11 +83,12 @@ module.exports = app => {
             "delete_password": await bcrypt.hash(req.body.delete_password, saltRounds),
             "board": board
           })
+          .then(u => {
+            res.redirect('/b/' + req.body.board);
+          })
           .catch(err => {
             console.log(err);
           });
-
-          res.redirect('/b/' + req.body.board);
         } else {
           res.json({"error": "missing required information"});
         }
@@ -93,17 +97,29 @@ module.exports = app => {
       .get(async (req, res) => {
         if (req.params.board) {
           await Thread.find({"board": req.params.board})
+                // Thanks https://stackoverflow.com/a/15081087 for sort syntax
+                .sort({"bumped_on": -1})
                 .then(async u => {
                   let threads = [];
 
                   // extract needed information from db records
                   for (const thread in u) {
+                    if (thread >= threadLimit) {
+                      break;
+                    }
+                    
                     // if replies exist, extract and sort them
                     let replies = [];
                     if (u[thread].replies) {
+                      // Thanks https://kb.objectrocket.com/mongo-db/the-mongoose-in-operator-1015 for $in operator
                       await Reply.find({"_id": {"$in": u[thread].replies}})
+                           .sort({"created_on": -1})
                            .then(v => {
                             for (const reply in v) {
+                              if (reply >= replyLimit) {
+                                break;
+                              }
+                              
                               replies.push({
                                 "_id": v[reply]._id,
                                 "text": v[reply].text,
@@ -114,9 +130,6 @@ module.exports = app => {
                            .catch(err => {
                              console.log(err);
                            });
-
-                      // Thanks https://www.geeksforgeeks.org/javascript/sort-an-object-array-by-date-in-javascript/ for sorting by date
-                      replies = replies.sort((a, b) => new Date(b.bumped_on) - new Date(a.bumped_on)).slice(0, 3);
                     }
                     
                     threads.push({
@@ -128,8 +141,6 @@ module.exports = app => {
                       "replycount": u[thread].replies.length
                     });
                   }
-
-                  threads = threads.sort((a, b) => new Date(b.bumped_on) - new Date(a.bumped_on)).slice(0, 10);
 
                   res.json(threads);
                 })
@@ -202,9 +213,12 @@ module.exports = app => {
           .then(u => {
             // add the reply to the thread by appending its id
             Thread.findOneAndUpdate({"_id": req.body.thread_id}, {
-              "bumped_on": Date.now(),
+              "bumped_on": u.created_on,
               // Thanks https://stackoverflow.com/a/52347322 for push syntax
               "$push": {"replies": u._id}
+            })
+            .then(u => {
+              res.redirect('/b/' + (req.body.board ? req.body.board : req.params.board) + '/' + req.body.thread_id);
             })
             .catch(err => {
               console.log(err);
@@ -213,8 +227,53 @@ module.exports = app => {
           .catch(err => {
             console.log(err);
           })
+        } else {
+          res.json({"error": "missing required information"});
+        }
+      })
+      // route for retrieving replies associated with thread
+      .get(async (req, res) => {
+        if (req.query.thread_id) {
+          // find the thread from the id
+          await Thread.findOne({"_id": req.query.thread_id})
+                .then(async u => {
+                  // if replies exist, extract and sort them
+                  let replies = [];
+                  if (u.replies) {
+                    await Reply.find({"_id": {"$in": u.replies}})
+                          .sort({"created_on": -1})
+                          .then(v => {
+                            for (const reply in v) {
+                              if (reply >= replyLimit) {
+                                break;
+                              }
+                              
+                              replies.push({
+                                "_id": v[reply]._id,
+                                "text": v[reply].text,
+                                "created_on": v[reply].created_on
+                              });
+                            }
+                          })
+                          .catch(err => {
+                            console.log(err);
+                          });
+                  }
+                  
+                  // extract needed information from the thread
+                  let thread = {
+                    "_id": u._id,
+                    "text": u.text,
+                    "created_on": u.created_on,
+                    "bumped_on": u.bumped_on,
+                    "replies": replies
+                  };
 
-          res.redirect('/b/' + req.body.board + '/' + req.body.thread_id);
+                  res.json(thread);
+                })
+                .catch(err => {
+                  console.log(err);
+                })
         } else {
           res.json({"error": "missing required information"});
         }
