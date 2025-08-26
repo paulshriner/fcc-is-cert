@@ -13,14 +13,11 @@ const threadSchema = new mongoose.Schema({
   },
   created_on: {
     type: Date,
-    required: true,
-    // Thanks https://github.com/Automattic/mongoose/issues/3675#issuecomment-411798850 for Date.now, which creates a new date each time
-    default: Date.now
+    required: true
   },
   bumped_on: {
     type: Date,
-    required: true,
-    default: Date.now
+    required: true
   },
   reported: {
     type: Boolean,
@@ -48,8 +45,7 @@ const replySchema = new mongoose.Schema({
   },
   created_on: {
     type: Date,
-    required: true,
-    default: Date.now
+    required: true
   },
   delete_password: {
     type: String,
@@ -78,10 +74,13 @@ module.exports = app => {
           
           // add the thread to the board
           // (boards aren't created, a board with no threads would just be empty)
+          let curDate = Date.now();
           Thread.insertOne({
             "text": req.body.text,
             "delete_password": await bcrypt.hash(req.body.delete_password, saltRounds),
-            "board": board
+            "board": board,
+            "created_on": curDate,
+            "bumped_on": curDate
           })
           .then(u => {
             res.redirect('/b/' + req.body.board);
@@ -208,7 +207,8 @@ module.exports = app => {
           // create a new reply
           Reply.insertOne({
             "text": req.body.text,
-            "delete_password": await bcrypt.hash(req.body.delete_password, saltRounds)
+            "delete_password": await bcrypt.hash(req.body.delete_password, saltRounds),
+            "created_on": Date.now()
           })
           .then(u => {
             // add the reply to the thread by appending its id
@@ -276,6 +276,34 @@ module.exports = app => {
                 })
         } else {
           res.json({"error": "missing required information"});
+        }
+      })
+      .delete((req, res) => {
+        if (req.body.thread_id && req.body.reply_id && req.body.delete_password) {
+          // find the reply
+          Reply.findOne({"_id": req.body.reply_id})
+               .then(async u => {
+                 if (u !== null) {
+                  // if it exists, check the password
+                  if (await bcrypt.compare(req.body.delete_password, u.delete_password)) {
+                    // if password valid, update content to represent deletion
+                    Reply.findOneAndUpdate({"_id": req.body.reply_id}, {"text": "[deleted]"})
+                         .then(v => {
+                           res.send("success");
+                         })
+                         .catch(err => {
+                           res.send("Error deleting reply.");
+                         });
+                  }
+                 } else {
+                  res.send("incorrect password");
+                 }
+               })
+               .catch(err => {
+                 res.send("Invalid or non-existant ID.");
+               });
+        } else {
+          res.send("Invalid or missing information.");
         }
       });
 };
