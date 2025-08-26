@@ -107,7 +107,7 @@ module.exports = app => {
                   }
 
                   // Thanks https://www.geeksforgeeks.org/javascript/sort-an-object-array-by-date-in-javascript/ for sorting by date
-                  threads = threads.sort((a, b) => new Date(b.bumped_on) - new Date(a.bumped_on));
+                  threads = threads.sort((a, b) => new Date(b.bumped_on) - new Date(a.bumped_on)).slice(0, 10);
 
                   res.json(threads);
                 })
@@ -142,6 +142,24 @@ module.exports = app => {
                 .catch(err => {
                   res.send("Invalid or non-existant ID.");
                 });
+        } else {
+          res.send("Invalid or missing information.");
+        }
+      })
+      // route for reporting a thread
+      .put((req, res) => {
+        if (req.body.thread_id) {
+          Thread.findOneAndUpdate({"_id": req.body.thread_id}, {reported: true})
+                .then(u => {
+                  if (u !== null) {
+                    res.send("reported");
+                  } else {
+                    res.send("Invalid or non-existant ID.");
+                  }
+                })
+                .catch(err => {
+                  res.send("Error reporting thread.");
+                })
         } else {
           res.send("Invalid or missing information.");
         }
