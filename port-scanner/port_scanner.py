@@ -1,4 +1,6 @@
 import socket
+# Thanks https://stackoverflow.com/a/20749411 for importing from a file
+from common_ports import ports_and_services
 
 def get_open_ports(target, port_range, verbose = False):
     # Get type of input
@@ -38,7 +40,35 @@ def get_open_ports(target, port_range, verbose = False):
     
     # Return verbose output if user selected that
     if verbose:
-        pass
+        # First line of output
+        output_str = "Open ports for "
+        if target_type == "URL":
+            output_str += f'{target} ({host})'
+        else:
+            try:
+                # Thanks https://how.dev/answers/how-to-find-the-domain-name-using-an-ip-address-in-python for gethostbyaddr()
+                url = socket.gethostbyaddr(host)[0]
+                output_str += f'{url} ({host})'
+            except socket.herror:
+                output_str += f'{host}'
+
+        # Second line
+        output_str += "\nPORT     SERVICE"
+
+        # Third and beyond lines
+        for port in open_ports:
+            # Print out port plus spacing to get to service line
+            output_str += f'\n{port}'
+            output_str += (4 - len(str(port))) * ' '
+            output_str += "     "
+
+            # For service, if it's not in ports_and_services array then print nothing
+            try:
+                output_str += ports_and_services[port]
+            except KeyError:
+                output_str += "       "
+        
+        return output_str
 
     return open_ports
 
@@ -63,5 +93,3 @@ def url_or_ip(target):
             return "URL"
 
     return "IP"
-
-print(get_open_ports("www.freecodecamp.org", [440, 445]))
