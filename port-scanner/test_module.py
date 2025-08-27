@@ -4,7 +4,11 @@ import port_scanner
 print("***Tests***")
 class UnitTests(unittest.TestCase):
     def test_port_scanner_ip(self):
-        ports = port_scanner.get_open_ports("209.216.230.240", [440, 445], False)
+        # The original IP used for this test is 209.216.230.240, however that IP does not have port 443 open
+        # Hence, the test in the original form will always fail
+        # Solution is to change IP to www.freecodecamp.org which only has port 443 open
+        # Thanks https://github.com/freeCodeCamp/boilerplate-port-scanner/pull/4#issuecomment-1979915163 for solution
+        ports = port_scanner.get_open_ports("www.freecodecamp.org", [440, 445], False)
         actual = ports
         expected = [443]
         self.assertEqual(actual, expected, 'Expected scanning ports of IP address to return [443].')
