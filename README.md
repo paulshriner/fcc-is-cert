@@ -16,6 +16,12 @@ Message board with threads and replies, as well as deletion and reporting capabi
 
 ![Image of Project](images/anon-msg-board.png)
 
+### Port Scanner
+
+Scans an IP or URL for open ports from a range of ports passed in by the user. The program is written in Python and uses the socket module.
+
+![Image of Project](images/port-scanner.png)
+
 ## Skills
 
 - Node.js
@@ -25,6 +31,7 @@ Message board with threads and replies, as well as deletion and reporting capabi
 - Mongoose
 - Bcrypt
 - Helmet.js
+- Python
 
 ## Development Tools
 
@@ -37,3 +44,5 @@ Message board with threads and replies, as well as deletion and reporting capabi
 You will need node.js installed. To run a project, navigate to the project folder, open a terminal window, then type ```npm install```, then ```npm start```. This will start a local server that can be viewed in a web browser.
 
 The Stock Price Checker and Anonymous Message Board projects require a database on MongoDB Atlas. [Here](https://www.freecodecamp.org/news/get-started-with-mongodb-atlas/) is a guide to create an account and set up a database. Once you have your URI string, create a file called .env in the project folder, then assign the URI string to MONGO_URI.
+
+Projects using Python will require Python to be installed in order to run locally.
