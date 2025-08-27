@@ -280,7 +280,7 @@ module.exports = app => {
       })
       // route for deleting a reply
       .delete((req, res) => {
-        if (req.body.thread_id && req.body.reply_id && req.body.delete_password) {
+        if (req.body.reply_id && req.body.delete_password) {
           // find the reply
           Reply.findOne({"_id": req.body.reply_id})
                .then(async u => {
@@ -295,9 +295,11 @@ module.exports = app => {
                          .catch(err => {
                            res.send("Error deleting reply.");
                          });
+                  } else {
+                    res.send("incorrect password");
                   }
                  } else {
-                  res.send("incorrect password");
+                    res.send("Invalid or non-existant ID.");
                  }
                })
                .catch(err => {
