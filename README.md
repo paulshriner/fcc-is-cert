@@ -22,6 +22,12 @@ Scans an IP or URL for open ports from a range of ports passed in by the user. T
 
 ![Image of Project](images/port-scanner.png)
 
+### SHA-1 Password Cracker
+
+Hashes passwords from a list of passwords to determine if it matches a given hash. With use_salts set to true, the function will prepend and append salts to each password before hashing. The program is written in Python and uses the hashlib module.
+
+![Image of Project](images/sha1-pw-cracker.png)
+
 ## Skills
 
 - Node.js
