@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const expect = require('chai');
 const socket = require('socket.io');
 const cors = require('cors');
+const Player = require('./public/Player.mjs').default;
+const {PLAYER_SPEED} = require('./public/constants.mjs');
 
 const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner.js');
@@ -51,6 +53,55 @@ const server = app.listen(portNum, () => {
       }
     }, 1500);
   }
+});
+
+// Thanks https://www.geeksforgeeks.org/node-js/introduction-to-sockets-io-in-node-js/ for Socket.io connections
+const io = socket(server);
+
+// Holds game state
+let state = {
+  players: {
+
+  }
+};
+
+// Handle user connection
+io.on('connection', c => {
+  // Create a new player
+  let x = 0;
+  let y = 0;
+  let score = 0;
+  let id = c.id;
+  state.players[id] = new Player({x, y, score, id});
+
+  // Tell client to add player
+  io.emit('update', state);
+
+  // Handle direction
+  c.on('up', () => {
+    state.players[id].movePlayer("up", PLAYER_SPEED);
+    io.emit('update', state);
+  });
+
+  c.on('down', () => {
+    state.players[id].movePlayer("down", PLAYER_SPEED);
+    io.emit('update', state);
+  });
+
+  c.on('left', () => {
+    state.players[id].movePlayer("left", PLAYER_SPEED);
+    io.emit('update', state);
+  });
+
+  c.on('right', () => {
+    state.players[id].movePlayer("right", PLAYER_SPEED);
+    io.emit('update', state);
+  });
+
+  // Handle user disconnection by removing player
+  c.on('disconnect', () => {
+    delete state.players[id];
+  });
 });
 
 module.exports = app; // For testing
