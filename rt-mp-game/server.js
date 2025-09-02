@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const expect = require('chai');
 const socket = require('socket.io');
 const cors = require('cors');
+const helmet = require('helmet');
+const noCache = require('nocache');
 const Player = require('./public/Player.mjs').default;
 const {PLAYER_SPEED} = require('./public/constants.mjs');
 
@@ -11,6 +13,15 @@ const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner.js');
 
 const app = express();
+
+// Security functionality for fCC tests 16-19
+app.use(helmet());
+// Thanks https://stackoverflow.com/a/9840285 for setting X-Powered-By header
+app.use((req, res, next) => {
+  res.header("X-Powered-By", "PHP 7.4.3");
+  next();
+});
+app.use(noCache());
 
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use('/assets', express.static(process.cwd() + '/assets'));
