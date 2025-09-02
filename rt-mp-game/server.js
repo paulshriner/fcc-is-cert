@@ -112,6 +112,7 @@ io.on('connection', c => {
   // Handle user disconnection by removing player
   c.on('disconnect', () => {
     delete state.players[id];
+    io.emit('update', state);
   });
 });
 

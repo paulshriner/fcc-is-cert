@@ -8,6 +8,14 @@ const context = canvas.getContext('2d');
 
 // https://www.seangoedecke.com/socket-io-game/ discusses building a game using Socket.io and HTML Canvas along with sample code, this was a massive help for this project
 
+// Holds current input state
+let input = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+}
+
 // Happens when server sends an update (such as player moved, another connection)
 socket.on('update', state => {
     init();
@@ -20,19 +28,29 @@ socket.on('update', state => {
 });
 
 // Handles button presses
-const keydown = e => {
-    if (e.key === "ArrowUp" || e.key === "w") {
-        socket.emit("up");
+const handleInput = (key, value) => {
+    if (key === "ArrowUp" || key === "w") {
+        input.up = value;
     }
-    if (e.key === "ArrowDown" || e.key === "s") {
-        socket.emit("down");
+    if (key === "ArrowDown" || key === "s") {
+        input.down = value;
     }
-    if (e.key === "ArrowLeft" || e.key === "a") {
-        socket.emit("left");
+    if (key === "ArrowLeft" || key === "a") {
+        input.left = value;
     }
-    if (e.key === "ArrowRight" || e.key === "d") {
-        socket.emit("right");
+    if (key === "ArrowRight" || key === "d") {
+        input.right = value;
     }
+}
+
+// Perfoms movement based on current input state
+const move = () => {
+    input.up && socket.emit("up");
+    input.down && socket.emit("down");
+    input.left && socket.emit("left");
+    input.right && socket.emit("right");
+
+    requestAnimationFrame(move);
 }
 
 // Initial tasks to set up the game
@@ -42,7 +60,17 @@ const init = () => {
     context.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
     // Add event listener for movement
-    document.addEventListener("keydown", keydown);
+    // Need to do both keydown and keyup in order to handle diagonal movement
+    // Thanks https://stackoverflow.com/a/51457938 for general idea
+    // Thanks https://www.w3schools.com/jsref/met_win_requestanimationframe.asp for requestAnimationFrame,
+    // without this there would be too many update calls due to key repeat
+    document.addEventListener("keydown", e => {
+        handleInput(e.key, true);
+    });
+    document.addEventListener("keyup", e => {
+        handleInput(e.key, false);
+    });
 }
 
 init();
+requestAnimationFrame(move);
