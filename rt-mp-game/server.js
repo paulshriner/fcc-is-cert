@@ -41,7 +41,7 @@ app.route('/')
 
 //For FCC testing purposes
 fccTestingRoutes(app);
-    
+
 // 404 Not Found Middleware
 app.use(function(req, res, next) {
   res.status(404)
@@ -75,7 +75,10 @@ let state = {
   players: {
 
   },
-  collectibles: []
+  collectibles: [],
+  rank: {
+
+  }
 };
 
 // Helper function to generate a random int based on range
@@ -109,6 +112,17 @@ const validPos = (x, y) => {
   return true;
 }
 
+// Helper function to convert state.players from JSON to array
+const arrOfPlayers = () => {
+  let arr = [];
+
+  for (const id in state.players) {
+    arr.push(state.players[id]);
+  }
+
+  return arr;
+}
+
 // Handle user connection
 io.on('connection', c => {
   // Create a new player
@@ -134,6 +148,7 @@ io.on('connection', c => {
 
   // Actions to take each time something changes
   const refresh = () => {
+    // See if player has collided with a collectible, if so add score and move collectible
     if (state.players[id]) {
       for (const collectible in state.collectibles) {
         if (state.players[id].collision(state.collectibles[collectible])) {
@@ -146,6 +161,12 @@ io.on('connection', c => {
           state.collectibles[collectible].y = y;
         }
       }
+    }
+
+    // update ranks, go through each player as players could've joined/left (which affect rank)
+    state.rank = {};
+    for (const player in state.players) {
+      state.rank[player] = state.players[player].calculateRank(arrOfPlayers())
     }
 
     io.emit('update', state);

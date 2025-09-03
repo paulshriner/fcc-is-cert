@@ -40,8 +40,13 @@ class Player {
     return false;
   }
 
+  // Return rank string for player
   calculateRank(arr) {
-
+    // Sort arr in ascending order by score
+    let sorted = arr.sort((a, b) => b.score - a.score);
+    
+    // Return its index, out of total players
+    return `Rank: ${sorted.indexOf(this) + 1} / ${arr.length}`;
   }
 }
 

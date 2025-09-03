@@ -31,6 +31,13 @@ socket.on('update', state => {
         context.fillStyle = constants.PLAYER_COLOR;
         context.fillRect(state.players[id].x, state.players[id].y, constants.PLAYER_WIDTH, constants.PLAYER_HEIGHT);
     });
+
+    // Draw player rank
+    if (state.rank[socket.id]) {
+        context.fillStyle = constants.FONT_COLOR;
+        context.font = `24px ${constants.FONT_FAMILY}`;
+        context.fillText(state.rank[socket.id], 510, 35);
+    }
 });
 
 // Handles button presses
@@ -64,6 +71,17 @@ const init = () => {
     // Draw canvas background
     context.fillStyle = constants.BG_COLOR;
     context.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+    // Draw HUD with control text and title
+    // rank isn't constant so that needs added with state update
+    context.fillStyle = constants.HUD_COLOR;
+    context.fillRect(0, 0, canvas.clientWidth, constants.HUD_HEIGHT);
+    context.fillStyle = constants.FONT_COLOR;
+    // Thanks https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text for drawing text
+    context.font = `24px ${constants.FONT_FAMILY}`;
+    context.fillText("Controls: WASD", 10, 35);
+    context.font = `bold 24px ${constants.FONT_FAMILY}`;
+    context.fillText("Charge Race", 270, 35);
 
     // Add event listener for movement
     // Need to do both keydown and keyup in order to handle diagonal movement
