@@ -1,6 +1,6 @@
 import Player from './Player.mjs';
 import Collectible from './Collectible.mjs';
-import {PLAYER_COLOR, BG_COLOR, PLAYER_SIZE} from './constants.mjs';
+import * as constants from './constants.mjs';
 
 const socket = io();
 const canvas = document.getElementById('game-window');
@@ -20,10 +20,16 @@ let input = {
 socket.on('update', state => {
     init();
 
+    // Draw the collectibles
+    for (const collectible in state.collectibles) {
+        context.fillStyle = constants.COLLECTIBLE_COLOR;
+        context.fillRect(state.collectibles[collectible].x, state.collectibles[collectible].y, constants.COLLECTIBLE_WIDTH, constants.COLLECTIBLE_HEIGHT);
+    }
+
     // Draw the players
     Object.keys(state.players).forEach(id => {
-        context.fillStyle = PLAYER_COLOR;
-        context.fillRect(state.players[id].x, state.players[id].y, PLAYER_SIZE, PLAYER_SIZE);
+        context.fillStyle = constants.PLAYER_COLOR;
+        context.fillRect(state.players[id].x, state.players[id].y, constants.PLAYER_WIDTH, constants.PLAYER_HEIGHT);
     });
 });
 
@@ -56,7 +62,7 @@ const move = () => {
 // Initial tasks to set up the game
 const init = () => {
     // Draw canvas background
-    context.fillStyle = BG_COLOR;
+    context.fillStyle = constants.BG_COLOR;
     context.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
     // Add event listener for movement

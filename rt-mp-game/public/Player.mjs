@@ -1,10 +1,10 @@
-import {GAME_MIN_WIDTH, GAME_MIN_HEIGHT, GAME_MAX_WIDTH, GAME_MAX_HEIGHT} from './constants.mjs'
+import * as constants from './constants.mjs';
 
 class Player {
   // Constructor sets up player based on passed in params
   constructor({x, y, score, id}) {
-    this.x = x <= GAME_MIN_WIDTH || x >= GAME_MAX_WIDTH ? GAME_MIN_WIDTH : x;
-    this.y = y <= GAME_MIN_HEIGHT || y >= GAME_MAX_HEIGHT ? GAME_MIN_HEIGHT : y;
+    this.x = x <= constants.GAME_MIN_WIDTH || x >= constants.GAME_MAX_WIDTH ? constants.GAME_MIN_WIDTH : x;
+    this.y = y <= constants.GAME_MIN_HEIGHT || y >= constants.GAME_MAX_HEIGHT ? constants.GAME_MIN_HEIGHT : y;
     this.score = score;
     this.id = id;
   }
@@ -12,22 +12,32 @@ class Player {
   // Handles player movement
   // If movement would result in player going out of bounds than movement doesn't happen
   movePlayer(dir, speed) {
-    if (dir === "up" && this.y - speed > GAME_MIN_HEIGHT) {
+    if (dir === "up" && this.y - speed > constants.GAME_MIN_HEIGHT) {
       this.y -= speed;
     }
-    if (dir === "down" && this.y + speed < GAME_MAX_HEIGHT) {
+    if (dir === "down" && this.y + speed < constants.GAME_MAX_HEIGHT) {
       this.y += speed;
     }
-    if (dir === "left" && this.x - speed > GAME_MIN_WIDTH) {
+    if (dir === "left" && this.x - speed > constants.GAME_MIN_WIDTH) {
       this.x -= speed;
     }
-    if (dir === "right" && this.x - speed < GAME_MAX_WIDTH) {
+    if (dir === "right" && this.x - speed < constants.GAME_MAX_WIDTH) {
       this.x += speed;
     }
   }
 
+  // Test if player collides with an item
   collision(item) {
+    // The reference point (this.x, this.y) is the top left of the player, likewise (item.x, item.y) is the top left of the item
+    // So check if the top left of the player is between the top left and top right of the item, then do the same check but for top right of the player
+    if ((this.x >= item.x && this.x <= item.x + constants.COLLECTIBLE_WIDTH) || (this.x + constants.PLAYER_WIDTH >= item.x && this.x + constants.PLAYER_WIDTH <= item.x + constants.COLLECTIBLE_WIDTH)) {
+      // Same concept as x but for y/height
+      if (this.y >= item.y && this.y <= item.y + constants.COLLECTIBLE_HEIGHT || (this.y + constants.PLAYER_HEIGHT >= item.y && this.y + constants.PLAYER_HEIGHT <= item.y + constants.COLLECTIBLE_HEIGHT)) {
+        return true;
+      }
+    }
 
+    return false;
   }
 
   calculateRank(arr) {

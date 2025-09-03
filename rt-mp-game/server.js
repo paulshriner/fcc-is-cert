@@ -7,7 +7,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const noCache = require('nocache');
 const Player = require('./public/Player.mjs').default;
-const {PLAYER_SPEED} = require('./public/constants.mjs');
+const Collectible = require('./public/Collectible.mjs').default;
+const constants = require('./public/constants.mjs');
 
 const fccTestingRoutes = require('./routes/fcctesting.js');
 const runner = require('./test-runner.js');
@@ -73,46 +74,77 @@ const io = socket(server);
 let state = {
   players: {
 
-  }
+  },
+  collectibles: []
 };
+
+// Helper function to generate a random int based on range
+// Thanks https://www.w3schools.com/JS/js_random.asp for idea
+const randInt = (min, max) => {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
 
 // Handle user connection
 io.on('connection', c => {
   // Create a new player
-  let x = 0;
-  let y = 0;
+  // TODO: Check coords that they don't immediately overlap with other players/obstacles
+  let x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
+  let y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
   let score = 0;
   let id = c.id;
   state.players[id] = new Player({x, y, score, id});
 
+  // Create a new collectible
+  if (state.collectibles.length < constants.MAX_COLLECTIBLES) {
+    x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
+    y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+    value = 1;
+    state.collectibles.push(new Collectible({x, y, value, id}));
+  }
+
+  // Actions to take each time something changes
+  const refresh = () => {
+    if (state.players[id]) {
+      for (const collectible in state.collectibles) {
+        if (state.players[id].collision(state.collectibles[collectible])) {
+          state.players[id].score += state.collectibles[collectible].value;
+          state.collectibles[collectible].x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
+          state.collectibles[collectible].y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+        }
+      }
+    }
+
+    io.emit('update', state);
+  }
+
   // Tell client to add player
-  io.emit('update', state);
+  refresh();
 
   // Handle direction
   c.on('up', () => {
-    state.players[id].movePlayer("up", PLAYER_SPEED);
-    io.emit('update', state);
+    state.players[id].movePlayer("up", constants.PLAYER_SPEED);
+    refresh();
   });
 
   c.on('down', () => {
-    state.players[id].movePlayer("down", PLAYER_SPEED);
-    io.emit('update', state);
+    state.players[id].movePlayer("down", constants.PLAYER_SPEED);
+    refresh();
   });
 
   c.on('left', () => {
-    state.players[id].movePlayer("left", PLAYER_SPEED);
-    io.emit('update', state);
+    state.players[id].movePlayer("left", constants.PLAYER_SPEED);
+    refresh();
   });
 
   c.on('right', () => {
-    state.players[id].movePlayer("right", PLAYER_SPEED);
-    io.emit('update', state);
+    state.players[id].movePlayer("right", constants.PLAYER_SPEED);
+    refresh();
   });
 
   // Handle user disconnection by removing player
   c.on('disconnect', () => {
     delete state.players[id];
-    io.emit('update', state);
+    refresh();
   });
 });
 
