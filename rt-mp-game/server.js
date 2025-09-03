@@ -84,20 +84,50 @@ const randInt = (min, max) => {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
+// Checks if a position is valid for an object in the game
+const validPos = (x, y) => {
+  // Create a test player, this is not added in the game
+  let testScore = 0;
+  let testId = 0;
+  let testPlayer = new Player({x, y, testScore, testId});
+
+  // Check if this player would collide with existing players
+  // A player is an "item" so we can use the same collision method
+  for (const id in state.players) {
+    if (state.players[id].collision(testPlayer)) {
+      return false;
+    }
+  }
+
+  // Do the same check for collectibles
+  for (const collectible in state.collectibles) {
+    if (testPlayer.collision(state.collectibles[collectible])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // Handle user connection
 io.on('connection', c => {
   // Create a new player
-  // TODO: Check coords that they don't immediately overlap with other players/obstacles
-  let x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
-  let y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+  let x = 0;
+  let y = 0;
+  do {
+    x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
+    y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+  } while (!validPos(x, y));
   let score = 0;
   let id = c.id;
   state.players[id] = new Player({x, y, score, id});
 
   // Create a new collectible
   if (state.collectibles.length < constants.MAX_COLLECTIBLES) {
-    x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
-    y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+    do {
+      x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
+      y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+    } while (!validPos(x, y));
     value = 1;
     state.collectibles.push(new Collectible({x, y, value, id}));
   }
@@ -108,8 +138,12 @@ io.on('connection', c => {
       for (const collectible in state.collectibles) {
         if (state.players[id].collision(state.collectibles[collectible])) {
           state.players[id].score += state.collectibles[collectible].value;
-          state.collectibles[collectible].x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
-          state.collectibles[collectible].y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+          do {
+            x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
+            y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);
+          } while (!validPos(x, y));
+          state.collectibles[collectible].x = x;
+          state.collectibles[collectible].y = y;
         }
       }
     }
