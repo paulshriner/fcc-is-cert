@@ -72,13 +72,9 @@ const io = socket(server);
 
 // Holds game state
 let state = {
-  players: {
-
-  },
+  players: {},
   collectibles: [],
-  rank: {
-
-  }
+  rank: {}
 };
 
 // Helper function to generate a random int based on range
@@ -136,8 +132,8 @@ io.on('connection', c => {
   let id = c.id;
   state.players[id] = new Player({x, y, score, id});
 
-  // Create a new collectible
-  if (state.collectibles.length < constants.MAX_COLLECTIBLES) {
+  // Create new collectibles
+  while (state.collectibles.length < constants.MAX_COLLECTIBLES) {
     do {
       x = randInt(constants.GAME_MIN_WIDTH, constants.GAME_MAX_WIDTH);
       y = randInt(constants.GAME_MIN_HEIGHT, constants.GAME_MAX_HEIGHT);

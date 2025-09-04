@@ -27,7 +27,7 @@ export const GAME_MAX_HEIGHT = 480 - PLAYER_HEIGHT;
 export const PLAYER_SPEED = 3;
 
 // Num of collectibles
-export const MAX_COLLECTIBLES = 1;
+export const MAX_COLLECTIBLES = 2;
 
 // Font family
 export const FONT_FAMILY = "sans-serif";

@@ -22,7 +22,7 @@ class Player {
     if (dir === "left" && this.x - speed > constants.GAME_MIN_WIDTH) {
       this.x -= speed;
     }
-    if (dir === "right" && this.x - speed < constants.GAME_MAX_WIDTH) {
+    if (dir === "right" && this.x + speed < constants.GAME_MAX_WIDTH) {
       this.x += speed;
     }
   }
@@ -59,7 +59,7 @@ class Player {
   calculateRank(arr) {
     // Sort arr in ascending order by score
     let sorted = arr.sort((a, b) => b.score - a.score);
-    
+
     // Return its index, out of total players
     return `Rank: ${sorted.indexOf(this) + 1} / ${arr.length}`;
   }
