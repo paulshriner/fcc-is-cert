@@ -2,31 +2,43 @@
 
 These are the projects I did in the completion of this certificate.
 
+[Here](https://www.freecodecamp.org/certification/fcc30aca8b2-d2c4-4009-a397-2e6d1ecbde3b/information-security-v7) is my certificate on freeCodeCamp.
+
 ## Projects
 
 ### Stock Price Checker
 
 Returns information about Nasdaq stocks. You can enter one or two stock names to check, and optionally like the stocks. When viewing one stock, the like counter is shown. When viewing two stocks, a relative like counter between the two is shown. I used Express to handle routes, a MongoDB database to store stock information, and wrote functional tests using the Chai library. Likes are based on IP addresses which are hashed using Bcrypt before being stored. In addition, Helmet.js is used for setting HTTP headers to improve security.
 
-![Image of Project](images/stock-price-checker.png)
+![Image of Project Tests](images/stock-price-checker.png)
 
 ### Anonymous Message Board
 
 Message board with threads and replies, as well as deletion and reporting capabilities. When making a thread or reply, you set a deletion password which is hashed using Bcrypt before being stored. Routes are handled with Express, MongoDB is used for the database, and functional tests use the Chai library. In addition, Helmet.js is used for setting HTTP headers to improve security.
 
-![Image of Project](images/anon-msg-board.png)
+![Image of Project Tests](images/anon-msg-board.png)
 
 ### Port Scanner
 
 Scans an IP or URL for open ports from a range of ports passed in by the user. The program is written in Python and uses the socket module.
 
-![Image of Project](images/port-scanner.png)
+![Image of Project Tests](images/port-scanner.png)
 
 ### SHA-1 Password Cracker
 
 Hashes passwords from a list of passwords to determine if it matches a given hash. With use_salts set to true, the function will prepend and append salts to each password before hashing. The program is written in Python and uses the hashlib module.
 
-![Image of Project](images/sha1-pw-cracker.png)
+![Image of Project Tests](images/sha1-pw-cracker.png)
+
+### Secure Real Time Multiplayer Game
+
+A multiplayer game written in JavaScript using Node.js, HTML Canvas API, Socket.io, Express, and Helmet.js. The criteria given by freeCodeCamp was very open-ended: be able to move an avatar, have a collectible item, and a rank-based score. The game I made is called "Charge Race". Your goal is to collect power cells and maintain the highest charge level (which is represented by rank).
+
+Note that while this project does meet the criteria given by freeCodeCamp, I don't consider it finished. The sprites are very simplistic and there is not much replay value (such as obstacles or other game modes). I also think a title screen and instructions would be helpful, as otherwise it may not be immediately clear how to play. 
+
+![Image of Project](images/rt-mp-game-demo.png)
+
+![Image of Project Tests](images/rt-mp-game-tests.png)
 
 ## Skills
 
@@ -38,6 +50,7 @@ Hashes passwords from a list of passwords to determine if it matches a given has
 - Bcrypt
 - Helmet.js
 - Python
+- Socket.io
 
 ## Development Tools
 
