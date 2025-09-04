@@ -1,3 +1,4 @@
+import Collectible from './Collectible.mjs';
 import * as constants from './constants.mjs';
 
 class Player {
@@ -28,11 +29,25 @@ class Player {
 
   // Test if player collides with an item
   collision(item) {
+    // Begin and end points for player
+    let pxBegin = this.x;
+    let pxEnd = this.x + constants.PLAYER_WIDTH;
+    let pyBegin = this.y;
+    let pyEnd = this.y + constants.PLAYER_HEIGHT;
+
+    // Begin and end points for item
+    // Item could be a player or collectible
+    // Thanks https://javascript.info/instanceof for instanceof
+    let ixBegin = item.x;
+    let ixEnd = item.x + (item instanceof Collectible ? constants.COLLECTIBLE_WIDTH : constants.PLAYER_WIDTH);
+    let iyBegin = item.y;
+    let iyEnd = item.y + (item instanceof Collectible ? constants.COLLECTIBLE_HEIGHT : constants.PLAYER_HEIGHT);
+    
     // The reference point (this.x, this.y) is the top left of the player, likewise (item.x, item.y) is the top left of the item
-    // So check if the top left of the player is between the top left and top right of the item, then do the same check but for top right of the player
-    if ((this.x >= item.x && this.x <= item.x + constants.COLLECTIBLE_WIDTH) || (this.x + constants.PLAYER_WIDTH >= item.x && this.x + constants.PLAYER_WIDTH <= item.x + constants.COLLECTIBLE_WIDTH)) {
+    // So check if the top left of the player is between the top left and top right of the item, then do the same check but for top right of the player, then do the same checks for the item
+    if ((pxBegin >= ixBegin && pxBegin <= ixEnd) || (pxEnd >= ixBegin && pxEnd <= ixEnd) || (ixBegin >= pxBegin && ixBegin <= pxEnd) || (ixEnd >= pxBegin && ixEnd <= pxEnd)) {
       // Same concept as x but for y/height
-      if (this.y >= item.y && this.y <= item.y + constants.COLLECTIBLE_HEIGHT || (this.y + constants.PLAYER_HEIGHT >= item.y && this.y + constants.PLAYER_HEIGHT <= item.y + constants.COLLECTIBLE_HEIGHT)) {
+      if ((pyBegin >= iyBegin && pyBegin <= iyEnd) || (pyEnd >= iyBegin && pyEnd <= iyEnd) || (iyBegin >= pyBegin && iyBegin <= pyEnd) || (iyEnd >= pyBegin && iyEnd <= pyEnd)) {
         return true;
       }
     }

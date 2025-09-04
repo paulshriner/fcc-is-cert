@@ -1,5 +1,3 @@
-import Player from './Player.mjs';
-import Collectible from './Collectible.mjs';
 import * as constants from './constants.mjs';
 
 const socket = io();
@@ -22,13 +20,15 @@ socket.on('update', state => {
 
     // Draw the collectibles
     for (const collectible in state.collectibles) {
-        context.fillStyle = constants.COLLECTIBLE_COLOR;
+        context.fillStyle = constants.COLLECTIBLE_BASE;
         context.fillRect(state.collectibles[collectible].x, state.collectibles[collectible].y, constants.COLLECTIBLE_WIDTH, constants.COLLECTIBLE_HEIGHT);
+        context.fillStyle = constants.COLLECTIBLE_TOP;
+        context.fillRect(state.collectibles[collectible].x, state.collectibles[collectible].y, constants.COLLECTIBLE_WIDTH, constants.COLLECTIBLE_HEIGHT / 4);
     }
 
     // Draw the players
     Object.keys(state.players).forEach(id => {
-        context.fillStyle = constants.PLAYER_COLOR;
+        context.fillStyle = socket.id === id ? constants.PLAYER_COLOR : constants.OPPONENT_COLOR;
         context.fillRect(state.players[id].x, state.players[id].y, constants.PLAYER_WIDTH, constants.PLAYER_HEIGHT);
     });
 
